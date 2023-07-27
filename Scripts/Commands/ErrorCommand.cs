@@ -12,7 +12,7 @@ namespace poetools.Console.Commands
         public void Execute(string[] args, RuntimeConsole console)
         {
             string message = "<color=grey><i>Invalid command! Try using \"help [command]\" for proper usage.</i></color>";
-            console.View.Text += $"\n{message}";
+            console.LogRaw($"\n{message}");
         }
 
         public void Dispose()

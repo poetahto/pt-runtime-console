@@ -10,7 +10,7 @@ namespace poetools.Console.Commands
 
         public override void Execute(string[] args, RuntimeConsole console)
         {
-            console.View.Text = string.Empty;
+            console.Clear();
             console.Log(Name, "Cleared Console.");
         }
     }

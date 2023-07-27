@@ -6,6 +6,7 @@ namespace poetools.Console.Commands
     public class EchoCommand : Command
     {
         public override string Name => "echo";
+        public override string Help => "Prints a message onto the console.";
 
         public override void Execute(string[] args, RuntimeConsole console)
         {

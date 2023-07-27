@@ -3,28 +3,47 @@ using System.Collections.Generic;
 using System.Linq;
 using poetools.Console.Commands;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace poetools.Console
 {
-    // todo: draggable and close-box view
-    // todo: command options and auto-complete for them
-
     public class RuntimeConsole : MonoBehaviour
     {
         [SerializeField]
-        private LogPrefix logPrefix;
-
-        [SerializeField]
-        private UserPrefix userPrefix;
-
-        [SerializeField]
+        [Tooltip("The number of commands that should be remembered after running.")]
         private int maxCommandHistory = 30;
 
         [SerializeField]
-        private RuntimeConsoleView consoleViewPrefab;
+        [Tooltip("Whether the console should begin opened or closed.")]
+        private bool startVisible;
 
         [SerializeField]
+        [Tooltip("The commands that are registered with the console by default.")]
         private Command[] autoRegisterCommands;
+
+        [Header("Style")]
+
+        [SerializeField]
+        [Tooltip("The prefix that is shown before logged messages.")]
+        private LogPrefix logPrefix;
+
+        [SerializeField]
+        [Tooltip("The prefix that is shown before used-entered messages.")]
+        private UserPrefix userPrefix;
+
+        [Header("References")]
+
+        [SerializeField]
+        [Tooltip("The text that displays the main console output.")]
+        private Text textDisplay;
+
+        [SerializeField]
+        [Tooltip("The text that displays auto-complete options.")]
+        private Text autoCompleteDisplay;
+
+        [SerializeField]
+        [Tooltip("The input field where the user enters console commands.")]
+        private InputField inputFieldDisplay;
 
         private List<ICommand> _commandInstances;
         private List<string> _suggestions;
@@ -32,11 +51,10 @@ namespace poetools.Console
         private string _oldValue;
 
         public static event Action<CreateEvent> OnCreate;
+        public event Action<bool, bool> OnVisibilityChanged;
 
         public CommandRegistry CommandRegistry { get; private set; }
-        public RuntimeConsoleView View { get; private set; }
         private IInputHistory InputHistory { get; set; }
-        public bool IsOpen => View.IsVisible();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Init()
@@ -52,9 +70,7 @@ namespace poetools.Console
             _suggestions = new List<string>();
 
             // Initialize the view.
-            View = Instantiate(consoleViewPrefab, transform);
-            View.name = consoleViewPrefab.name;
-            View.SetVisible(false);
+            SetVisible(startVisible);
 
             // Register default commands.
             foreach (Command command in autoRegisterCommands)
@@ -78,28 +94,55 @@ namespace poetools.Console
 
         private void OnEnable()
         {
-            View.OnVisibilityChanged += HandleVisibilityChange;
-            View.inputFieldDisplay.onSubmit.AddListener(HandleSubmit);
-            View.inputFieldDisplay.onValueChanged.AddListener(HandleInputChange);
+            OnVisibilityChanged += HandleVisibilityChange;
+            inputFieldDisplay.onSubmit.AddListener(HandleSubmit);
+            inputFieldDisplay.onValueChanged.AddListener(HandleInputChange);
         }
 
         private void OnDisable()
         {
-            View.OnVisibilityChanged -= HandleVisibilityChange;
-            View.inputFieldDisplay.onSubmit.RemoveListener(HandleSubmit);
-            View.inputFieldDisplay.onValueChanged.RemoveListener(HandleInputChange);
+            OnVisibilityChanged -= HandleVisibilityChange;
+            inputFieldDisplay.onSubmit.RemoveListener(HandleSubmit);
+            inputFieldDisplay.onValueChanged.RemoveListener(HandleInputChange);
         }
 
         // === Public API ===
         public void Log(string category, string message)
         {
             string header = logPrefix.GenerateMessage(category);
-            View.Text += $"\n{header}{message}";
+            LogRaw($"{header}{message}");
+        }
+
+        public void LogRaw(string message)
+        {
+            textDisplay.text += $"\n{message}";
+        }
+
+        public void Clear()
+        {
+            textDisplay.text = string.Empty;
+        }
+
+        public void Execute(string command)
+        {
+            HandleSubmit(command);
         }
 
         public void ToggleVisibility()
         {
-            View.SetVisible(!View.IsVisible());
+            SetVisible(!IsVisible());
+        }
+
+        public void SetVisible(bool isVisible)
+        {
+            bool wasVisible = gameObject.activeSelf;
+            gameObject.SetActive(isVisible);
+            OnVisibilityChanged?.Invoke(wasVisible, isVisible);
+        }
+
+        public bool IsVisible()
+        {
+            return gameObject.activeSelf;
         }
 
         public void CycleAutoComplete()
@@ -111,13 +154,13 @@ namespace poetools.Console
         public void MoveHistoryBackward()
         {
             if (InputHistory.TryMoveBackwards(out string prevCommand))
-                View.inputFieldDisplay.text = prevCommand;
+                inputFieldDisplay.text = prevCommand;
         }
 
         public void MoveHistoryForward()
         {
             if (InputHistory.TryMoveForwards(out string nextCommand))
-                View.inputFieldDisplay.text = nextCommand;
+                inputFieldDisplay.text = nextCommand;
         }
 
         // === Event Handlers ===
@@ -129,7 +172,7 @@ namespace poetools.Console
             {
                 string[] args = ArgumentTools.Parse(splitInput);
                 ICommand command = CommandRegistry.FindCommand(splitInput[0]);
-                View.Text += '\n' + userPrefix.GenerateMessage(input);
+                textDisplay.text += '\n' + userPrefix.GenerateMessage(input);
 
                 command.Execute(args, this);
                 InputHistory.AddEntry(input);
@@ -151,7 +194,7 @@ namespace poetools.Console
             if (splitInput.Length == 0)
             {
                 // case: we have no input.
-                View.autoCompleteDisplay.text = string.Empty;
+                autoCompleteDisplay.text = string.Empty;
                 return;
             }
 
@@ -164,13 +207,13 @@ namespace poetools.Console
                 if (_suggestions.Any() && newSpaceCount > oldSpaceCount)
                 {
                     _autoCompleteIndex = 0;
-                    string autoCompleteText = View.autoCompleteDisplay.text;
-                    View.inputFieldDisplay.text = autoCompleteText + " ";
-                    View.inputFieldDisplay.caretPosition = View.inputFieldDisplay.text.Length;
+                    string autoCompleteText = autoCompleteDisplay.text;
+                    inputFieldDisplay.text = autoCompleteText + " ";
+                    inputFieldDisplay.caretPosition = inputFieldDisplay.text.Length;
                 }
             }
 
-            CommandRegistry.FindCommands(View.inputFieldDisplay.text, _suggestions);
+            CommandRegistry.FindCommands(inputFieldDisplay.text, _suggestions);
             UpdateAutoCompleteText();
             _oldValue = value;
         }
@@ -180,13 +223,13 @@ namespace poetools.Console
         {
             int index = (int) Mathf.Repeat(_autoCompleteIndex, _suggestions.Count);
             string autoCompleteText = _suggestions.Count > 0 ? _suggestions[index] : "";
-            View.autoCompleteDisplay.text = autoCompleteText;
+            autoCompleteDisplay.text = autoCompleteText;
         }
 
         private void ResetInputField()
         {
-            View.inputFieldDisplay.text = string.Empty;
-            View.inputFieldDisplay.ActivateInputField();
+            inputFieldDisplay.text = string.Empty;
+            inputFieldDisplay.ActivateInputField();
             InputHistory.Clear();
         }
 

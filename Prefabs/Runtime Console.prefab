@@ -109,9 +109,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3102020810486618538}
-  - component: {fileID: 3102020810486618539}
+  - component: {fileID: 5568782354881521639}
   m_Layer: 0
-  m_Name: Console View
+  m_Name: Runtime Console
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -133,7 +133,7 @@ Transform:
   - {fileID: 7100689246938765752}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3102020810486618539
+--- !u!114 &5568782354881521639
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -142,9 +142,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 3102020810486618537}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dcd2532f345b45dd83b0c18c6b8947e8, type: 3}
+  m_Script: {fileID: 11500000, guid: 873b56b62b2d40458d8ecc6d16cbb999, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  logPrefix: {fileID: 11400000, guid: 17cf751f0b682e449971e6f47964edf0, type: 2}
+  userPrefix: {fileID: 11400000, guid: f57b872aca0756046b9966d6c2ebfd5e, type: 2}
+  maxCommandHistory: 30
+  autoRegisterCommands:
+  - {fileID: 11400000, guid: 1fa00225a0b99fb488b218dc51d148bb, type: 2}
+  - {fileID: 11400000, guid: 82da640390210f24c8fddaaf9008acdc, type: 2}
+  - {fileID: 11400000, guid: c01bddd9581517d4586f81441231e42b, type: 2}
+  - {fileID: 11400000, guid: 17c9943a1cfe7af4d8e1e775dc754fdb, type: 2}
+  - {fileID: 11400000, guid: e34ec07c43d40304dba698ef9eb821e1, type: 2}
+  - {fileID: 11400000, guid: 4321e91cf8debba43a4eefcb520dc8a0, type: 2}
+  startVisible: 0
   textDisplay: {fileID: 5649432401320015885}
   autoCompleteDisplay: {fileID: 1810927235049620117}
   inputFieldDisplay: {fileID: 7725276640430708806}
@@ -336,7 +347,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.000015258789, y: -0.000030517578}
+  m_AnchoredPosition: {x: -0.000015258789, y: -0.000030517578}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!222 &5649432401320015884

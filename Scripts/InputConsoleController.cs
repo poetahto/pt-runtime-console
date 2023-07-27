@@ -8,9 +8,9 @@ namespace poetools.Console
     public class InputConsoleController : MonoBehaviour
     {
         public KeyCode visibilityToggleKey = KeyCode.BackQuote;
-        public KeyCode cycleAutoCompleteKey = KeyCode.UpArrow;
-        public KeyCode historyBackwardKey = KeyCode.DownArrow;
-        public KeyCode historyForwardKey = KeyCode.Tab;
+        public KeyCode cycleAutoCompleteKey = KeyCode.Tab;
+        public KeyCode historyBackwardKey = KeyCode.UpArrow;
+        public KeyCode historyForwardKey = KeyCode.DownArrow;
 
         private void Update()
         {
@@ -19,12 +19,12 @@ namespace poetools.Console
             bool historyBackward = Input.GetKeyDown(historyBackwardKey);
             bool historyForward = Input.GetKeyDown(historyForwardKey);
 
-            foreach (var console in FindObjectsOfType<RuntimeConsole>())
+            foreach (var console in FindObjectsOfType<RuntimeConsole>(true))
             {
                 if (toggleVisibility)
                     console.ToggleVisibility();
 
-                if (console.IsOpen)
+                if (console.IsVisible())
                 {
                     if (cycleAutoComplete)
                         console.CycleAutoComplete();

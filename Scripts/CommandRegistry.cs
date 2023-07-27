@@ -10,12 +10,10 @@ namespace poetools.Console
     /// </summary>
     public class CommandRegistry : IDisposable
     {
-        private readonly List<ICommand> _commands = new List<ICommand>();
         private readonly Dictionary<string, ICommand> _commandLookup = new Dictionary<string, ICommand>();
         private readonly DictionaryTree _autoCompleter = new DictionaryTree();
 
         public ICommand DefaultCommand { get; } = new ErrorCommand();
-        public IEnumerable<ICommand> Commands => _commands;
 
         public event Action<CommandAddEvent> CommandAdded;
         public event Action<CommandRemoveEvent> CommandRemoved;
@@ -30,7 +28,6 @@ namespace poetools.Console
         {
             foreach (var command in commandList)
             {
-                _commands.Add(command);
                 _commandLookup.Add(command.Name, command);
                 _autoCompleter.Insert(command.Name);
 
@@ -43,7 +40,6 @@ namespace poetools.Console
         {
             foreach (var command in commandList)
             {
-                _commands.Remove(command);
                 _commandLookup.Remove(command.Name);
                 _autoCompleter.Remove(command.Name);
 
