@@ -1,0 +1,16 @@
+﻿using UnityEngine;
+
+namespace poetools.Console.Commands
+{
+    [CreateAssetMenu(menuName = RuntimeConsoleNaming.AssetMenuName + "/Commands/Clear")]
+    public class ClearCommand : Command
+    {
+        public override string Name => "clear";
+
+        public override void Execute(string[] args, RuntimeConsole console)
+        {
+            console.View.Text = string.Empty;
+            console.Log(Name, "Cleared Console.");
+        }
+    }
+}
