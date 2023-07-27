@@ -13,11 +13,8 @@ namespace poetools.Console
 
     public class InputHistory : IInputHistory
     {
-        // invariant 1: commandHistory never has more nodes that maxHistoryLength
-
         private readonly LinkedList<string> _commandHistory;
         private readonly int _maxHistoryLength;
-
         private bool _isCleared = true;
         private LinkedListNode<string> _currentHistoryNode;
 
@@ -28,6 +25,7 @@ namespace poetools.Console
             _currentHistoryNode = new LinkedListNode<string>("");
         }
 
+        // === Public API ===
         public void AddEntry(string input)
         {
             // We don't really care about saving duplicates.
@@ -37,7 +35,6 @@ namespace poetools.Console
             _commandHistory.AddLast(input);
             _currentHistoryNode = _commandHistory.Last;
 
-            // Maintain invariant 1
             while (_commandHistory.Count > _maxHistoryLength)
                 _commandHistory.RemoveFirst();
         }
@@ -74,6 +71,7 @@ namespace poetools.Console
             _currentHistoryNode = _commandHistory.Last;
         }
 
+        // === Helpers ===
         private bool TryMoveTo(LinkedListNode<string> destination, out string result)
         {
             result = _currentHistoryNode.Value;

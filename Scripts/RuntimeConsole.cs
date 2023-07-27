@@ -3,19 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using poetools.Console.Commands;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace poetools.Console
 {
-    // NOT DOABLE: move init method into base class
-    // DONE: allow customization of command prefix format
     // todo: draggable and close-box view
     // todo: command options and auto-complete for them
-    // todo: clean up
-    // todo: do singleton / static pass on codebase to ensure quick-play-mode compatibility
-
-    // INVARIANTS - autoCompleteIndex should always be in range of autoCompleteCommands
-    // INVARIANTS - all reference-type fields must not be null.
 
     public class RuntimeConsole : MonoBehaviour
     {
@@ -34,21 +26,30 @@ namespace poetools.Console
         [SerializeField]
         private Command[] autoRegisterCommands;
 
-        private List<string> _suggestions = new List<string>();
+        private List<ICommand> _commandInstances;
+        private List<string> _suggestions;
         private int _autoCompleteIndex;
         private string _oldValue;
 
         public static event Action<CreateEvent> OnCreate;
-        public event Action RegistrationFinished;
 
         public CommandRegistry CommandRegistry { get; private set; }
         public RuntimeConsoleView View { get; private set; }
         private IInputHistory InputHistory { get; set; }
+        public bool IsOpen => View.IsVisible();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void Init()
+        {
+            OnCreate = null;
+        }
 
         private void Awake()
         {
             CommandRegistry = new CommandRegistry();
             InputHistory = new InputHistory(maxCommandHistory);
+            _commandInstances = new List<ICommand>();
+            _suggestions = new List<string>();
 
             // Initialize the view.
             View = Instantiate(consoleViewPrefab, transform);
@@ -58,18 +59,21 @@ namespace poetools.Console
             // Register default commands.
             foreach (Command command in autoRegisterCommands)
             {
-                command.Initialize(this);
-                CommandRegistry.Register(command);
+                Command instance = Instantiate(command);
+                instance.Initialize(this);
+                CommandRegistry.Register(instance);
+                _commandInstances.Add(instance);
             }
 
             OnCreate?.Invoke(new CreateEvent{Console = this});
-            RegistrationFinished?.Invoke();
         }
 
         private void OnDestroy()
         {
+            foreach (ICommand command in _commandInstances)
+                command.Dispose();
+
             CommandRegistry.Dispose();
-            OnCreate = null;
         }
 
         private void OnEnable()
@@ -86,6 +90,37 @@ namespace poetools.Console
             View.inputFieldDisplay.onValueChanged.RemoveListener(HandleInputChange);
         }
 
+        // === Public API ===
+        public void Log(string category, string message)
+        {
+            string header = logPrefix.GenerateMessage(category);
+            View.Text += $"\n{header}{message}";
+        }
+
+        public void ToggleVisibility()
+        {
+            View.SetVisible(!View.IsVisible());
+        }
+
+        public void CycleAutoComplete()
+        {
+            _autoCompleteIndex++;
+            UpdateAutoCompleteText();
+        }
+
+        public void MoveHistoryBackward()
+        {
+            if (InputHistory.TryMoveBackwards(out string prevCommand))
+                View.inputFieldDisplay.text = prevCommand;
+        }
+
+        public void MoveHistoryForward()
+        {
+            if (InputHistory.TryMoveForwards(out string nextCommand))
+                View.inputFieldDisplay.text = nextCommand;
+        }
+
+        // === Event Handlers ===
         private void HandleSubmit(string input)
         {
             string[] splitInput = input.Split(new []{' '}, StringSplitOptions.RemoveEmptyEntries);
@@ -122,8 +157,8 @@ namespace poetools.Console
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                var newSpaceCount = value.Count(c => c == ' ');
-                var oldSpaceCount = _oldValue.Count(c => c == ' ');
+                int newSpaceCount = value.Count(c => c == ' ');
+                int oldSpaceCount = _oldValue.Count(c => c == ' ');
 
                 // If we entered a space, apply the auto-complete.
                 if (_suggestions.Any() && newSpaceCount > oldSpaceCount)
@@ -140,35 +175,12 @@ namespace poetools.Console
             _oldValue = value;
         }
 
+        // === Helpers ===
         private void UpdateAutoCompleteText()
         {
-            var index = (int) Mathf.Repeat(_autoCompleteIndex, _suggestions.Count);
+            int index = (int) Mathf.Repeat(_autoCompleteIndex, _suggestions.Count);
             string autoCompleteText = _suggestions.Count > 0 ? _suggestions[index] : "";
             View.autoCompleteDisplay.text = autoCompleteText;
-        }
-
-        private void CycleAutoCompleteOption(int direction)
-        {
-            _autoCompleteIndex += direction;
-            UpdateAutoCompleteText();
-        }
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.UpArrow) && InputHistory.TryMoveBackwards(out string prevCommand))
-                View.inputFieldDisplay.text = prevCommand;
-
-            if (Input.GetKeyDown(KeyCode.DownArrow) && InputHistory.TryMoveForwards(out string nextCommand))
-                View.inputFieldDisplay.text = nextCommand;
-
-            if (Input.GetKeyDown(KeyCode.Tab))
-                CycleAutoCompleteOption(1);
-        }
-
-        public void Log(string category, string message)
-        {
-            string header = logPrefix.GenerateMessage(category);
-            View.Text += $"\n{header}{message}";
         }
 
         private void ResetInputField()
@@ -178,6 +190,7 @@ namespace poetools.Console
             InputHistory.Clear();
         }
 
+        // === Structures ===
         public struct CreateEvent
         {
             public RuntimeConsole Console;

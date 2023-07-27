@@ -40,14 +40,14 @@ namespace poetools.Console.Commands
             console.Log("help", $"\n{command.Help}");
         }
 
-        private void HandleCommandAdded(ICommand command)
+        private void HandleCommandAdded(CommandRegistry.CommandAddEvent eventData)
         {
-            _commandRegistry.AddAutoCompletion($"help {command.Name}");
+            _commandRegistry.AddAutoCompletion($"help {eventData.Command.Name}");
         }
 
-        private void HandleCommandRemoved(ICommand command)
+        private void HandleCommandRemoved(CommandRegistry.CommandRemoveEvent eventData)
         {
-            _commandRegistry.RemoveAutoCompletion($"help {command.Name}");
+            _commandRegistry.RemoveAutoCompletion($"help {eventData.Command.Name}");
         }
     }
 }

@@ -67,14 +67,7 @@ namespace poetools.Console
         {
             var charArray = prefix.ToCharArray();
             var endingNode = _rootNode.GetEndingNodeOfString(charArray, 0);
-
-            if (endingNode != null)
-            {
-                // bool wasEnd = endingNode.IsEnd;
-                // endingNode.IsEnd = false;
-                endingNode.GetAllWords(results, WordBuffer, 0);
-                // endingNode.IsEnd = wasEnd;
-            }
+            endingNode?.GetAllWords(results, WordBuffer, 0);
         }
 
         public void Remove(string word)
@@ -109,7 +102,7 @@ namespace poetools.Console
                 char c = w[index];
 
                 if (!CharToIndex.ContainsKey(c))
-                    throw new ArgumentException("Only alphanumeric commands can be added!");
+                    throw new ArgumentException($"Only alphanumeric commands can be added! (\"{c}\" attempted)");
 
                 int convertedIndex = CharToIndex[c];
                 DictionaryTreeNode next = _children[convertedIndex];

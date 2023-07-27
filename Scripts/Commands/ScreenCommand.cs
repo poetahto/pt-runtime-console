@@ -7,6 +7,7 @@ namespace poetools.Console.Commands
     public class ScreenCommand : Command
     {
         public override string Name => "screen";
+        public override string Help => "Allows you to change various options of the window, such as resolution or refresh rate.";
 
         public override IEnumerable<string> AutoCompletions => new[]
         {

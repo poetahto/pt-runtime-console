@@ -6,6 +6,7 @@ namespace poetools.Console.Commands
     public class ClearCommand : Command
     {
         public override string Name => "clear";
+        public override string Help => "Removes all messages from the console.";
 
         public override void Execute(string[] args, RuntimeConsole console)
         {

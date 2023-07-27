@@ -4,18 +4,28 @@ using poetools.Console.Commands;
 
 namespace poetools.Console
 {
+    /// <summary>
+    /// The structure responsible for tracking and finding all registered commands.
+    /// It can also supply autocompletion for a given string.
+    /// </summary>
     public class CommandRegistry : IDisposable
     {
         private readonly List<ICommand> _commands = new List<ICommand>();
         private readonly Dictionary<string, ICommand> _commandLookup = new Dictionary<string, ICommand>();
         private readonly DictionaryTree _autoCompleter = new DictionaryTree();
 
-        public ICommand DefaultCommand { get; set; } = new ErrorCommand();
+        public ICommand DefaultCommand { get; } = new ErrorCommand();
         public IEnumerable<ICommand> Commands => _commands;
 
-        public event Action<ICommand> CommandAdded;
-        public event Action<ICommand> CommandRemoved;
+        public event Action<CommandAddEvent> CommandAdded;
+        public event Action<CommandRemoveEvent> CommandRemoved;
 
+        public void Dispose()
+        {
+            DefaultCommand?.Dispose();
+        }
+
+        // === Registration ===
         public void Register(params ICommand[] commandList)
         {
             foreach (var command in commandList)
@@ -25,10 +35,24 @@ namespace poetools.Console
                 _autoCompleter.Insert(command.Name);
 
                 AddAutoCompletions(command.AutoCompletions);
-                CommandAdded?.Invoke(command);
+                CommandAdded?.Invoke(new CommandAddEvent{Command = command});
             }
         }
 
+        public void Unregister(params ICommand[] commandList)
+        {
+            foreach (var command in commandList)
+            {
+                _commands.Remove(command);
+                _commandLookup.Remove(command.Name);
+                _autoCompleter.Remove(command.Name);
+
+                RemoveAutoCompletions(command.AutoCompletions);
+                CommandRemoved?.Invoke(new CommandRemoveEvent{Command = command});
+            }
+        }
+
+        // === Auto Completion ===
         public void RemoveAutoCompletions(IEnumerable<string> autoCompletions)
         {
             foreach (var autoCompletion in autoCompletions)
@@ -51,19 +75,7 @@ namespace poetools.Console
             _autoCompleter.Insert(autoCompletion);
         }
 
-        public void Unregister(params ICommand[] commandList)
-        {
-            foreach (var command in commandList)
-            {
-                _commands.Remove(command);
-                _commandLookup.Remove(command.Name);
-                _autoCompleter.Remove(command.Name);
-
-                RemoveAutoCompletions(command.AutoCompletions);
-                CommandRemoved?.Invoke(command);
-            }
-        }
-
+        // === Searching ===
         public void FindCommands(string commandName, List<string> results)
         {
             results.Clear();
@@ -85,12 +97,15 @@ namespace poetools.Console
             return result;
         }
 
-        public void Dispose()
+        // === Structures ===
+        public struct CommandAddEvent
         {
-            DefaultCommand?.Dispose();
+            public ICommand Command;
+        }
 
-            // foreach (var command in _commands)
-            //     command.Dispose();
+        public struct CommandRemoveEvent
+        {
+            public ICommand Command;
         }
     }
 }

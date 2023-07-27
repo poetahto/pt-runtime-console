@@ -47,6 +47,5 @@ namespace poetools.Console
         {
             return gameObject.activeSelf;
         }
-
     }
 }

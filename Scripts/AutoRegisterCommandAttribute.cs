@@ -4,12 +4,16 @@ using UnityEngine;
 
 namespace poetools.Console
 {
+    /// <summary>
+    /// An attribute that allows commands to be automatically registered with a console when created.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class AutoRegisterCommandAttribute : Attribute {}
 
     public static class AutoCommandRegister
     {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        // Note: this must run after Subsystems, since that is when RuntimeConsole resets stuff.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Init()
         {
             RuntimeConsole.OnCreate += AutoRegister;

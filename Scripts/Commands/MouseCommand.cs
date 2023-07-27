@@ -10,6 +10,7 @@ namespace poetools.Console.Commands
         private RuntimeConsole _console;
 
         public override string Name => "mouse";
+        public override string Help => "Allows you to edit the cursor settings.";
 
         public override IEnumerable<string> AutoCompletions { get; } = new[]
         {
