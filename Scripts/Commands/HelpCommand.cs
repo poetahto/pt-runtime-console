@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace poetools.Console.Commands
@@ -9,32 +10,15 @@ namespace poetools.Console.Commands
         public override string Name => "help";
         public override string Help => "Print information on how to use other commands!";
 
-        public override IEnumerable<string> AutoCompletions => _autoCompletions;
+        public override IEnumerable<string> AutoCompletions => Array.Empty<string>();
 
-        private List<string> _autoCompletions = new List<string>();
         private CommandRegistry _commandRegistry;
-        private RuntimeConsole _console;
 
         public override void Initialize(RuntimeConsole console)
         {
-            _console = console;
-            console.RegistrationFinished += HandleRegistrationFinished;
-        }
-
-        private void HandleRegistrationFinished()
-        {
-            _console.RegistrationFinished -= HandleRegistrationFinished;
-
-            _commandRegistry = _console.CommandRegistry;
+            _commandRegistry = console.CommandRegistry;
             _commandRegistry.CommandAdded += HandleCommandAdded;
             _commandRegistry.CommandRemoved += HandleCommandRemoved;
-
-            _autoCompletions.Clear();
-
-            foreach (var command in _commandRegistry.Commands)
-                _autoCompletions.Add($"help {command.Name}");
-
-            _commandRegistry.AddAutoCompletions(_autoCompletions);
         }
 
         public override void Dispose()
@@ -52,23 +36,18 @@ namespace poetools.Console.Commands
             if (args.Length != 1)
                 return;
 
-            var target = args[0];
-            var command = _commandRegistry.FindCommand(target);
+            ICommand command = _commandRegistry.FindCommand(args[0]);
             console.Log("help", $"\n{command.Help}");
         }
 
         private void HandleCommandAdded(ICommand command)
         {
-            _commandRegistry.RemoveAutoCompletions(_autoCompletions);
-            _autoCompletions.Add(command.Name);
-            _commandRegistry.AddAutoCompletions(_autoCompletions);
+            _commandRegistry.AddAutoCompletion($"help {command.Name}");
         }
 
         private void HandleCommandRemoved(ICommand command)
         {
-            _commandRegistry.RemoveAutoCompletions(_autoCompletions);
-            _autoCompletions.Remove(command.Name);
-            _commandRegistry.AddAutoCompletions(_autoCompletions);
+            _commandRegistry.RemoveAutoCompletion($"help {command.Name}");
         }
     }
 }

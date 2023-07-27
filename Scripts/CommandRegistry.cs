@@ -32,13 +32,23 @@ namespace poetools.Console
         public void RemoveAutoCompletions(IEnumerable<string> autoCompletions)
         {
             foreach (var autoCompletion in autoCompletions)
-                _autoCompleter.Remove(autoCompletion);
+                RemoveAutoCompletion(autoCompletion);
         }
 
         public void AddAutoCompletions(IEnumerable<string> autoCompletions)
         {
             foreach (var autoCompletion in autoCompletions)
-                _autoCompleter.Insert(autoCompletion);
+                AddAutoCompletion(autoCompletion);
+        }
+
+        public void RemoveAutoCompletion(string autoCompletion)
+        {
+            _autoCompleter.Remove(autoCompletion);
+        }
+
+        public void AddAutoCompletion(string autoCompletion)
+        {
+            _autoCompleter.Insert(autoCompletion);
         }
 
         public void Unregister(params ICommand[] commandList)

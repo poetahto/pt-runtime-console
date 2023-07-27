@@ -34,14 +34,16 @@ namespace poetools.Console
         [SerializeField]
         private Command[] autoRegisterCommands;
 
+        private List<string> _suggestions = new List<string>();
+        private int _autoCompleteIndex;
+        private string _oldValue;
+
+        public static event Action<CreateEvent> OnCreate;
+        public event Action RegistrationFinished;
+
         public CommandRegistry CommandRegistry { get; private set; }
         public RuntimeConsoleView View { get; private set; }
-
         private IInputHistory InputHistory { get; set; }
-        private int _autoCompleteIndex;
-
-        internal static event Action<CreateEvent> OnCreate;
-        public event Action RegistrationFinished;
 
         private void Awake()
         {
@@ -69,8 +71,6 @@ namespace poetools.Console
             CommandRegistry.Dispose();
             OnCreate = null;
         }
-
-        #region Event Handling
 
         private void OnEnable()
         {
@@ -109,9 +109,6 @@ namespace poetools.Console
                 ResetInputField();
         }
 
-        private List<string> _suggestions = new List<string>();
-        private string _oldValue;
-
         private void HandleInputChange(string value)
         {
             string[] splitInput = value.Split(new []{' '}, StringSplitOptions.RemoveEmptyEntries);
@@ -142,8 +139,6 @@ namespace poetools.Console
             UpdateAutoCompleteText();
             _oldValue = value;
         }
-
-        #endregion
 
         private void UpdateAutoCompleteText()
         {

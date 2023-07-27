@@ -33,8 +33,12 @@ namespace poetools.Console.Commands
                     case "resolution" when args.Length >= 3 && int.TryParse(args[1], out var width) && int.TryParse(args[2], out var height):
                         Screen.SetResolution(width, height, Screen.fullScreenMode);
                         break;
-                    case "refresh" when args.Length >= 2 && int.TryParse(args[1], out var rate):
+                    case "refresh" when args.Length >= 2 && uint.TryParse(args[1], out var rate):
+#if UNITY_2022_3
+                        Screen.SetResolution(Screen.width, Screen.height, Screen.fullScreenMode, new RefreshRate{numerator = rate, denominator = 1});
+#else
                         Screen.SetResolution(Screen.width, Screen.height, Screen.fullScreenMode, rate);
+#endif
                         break;
                     case "vsync" when args.Length >= 2 && bool.TryParse(args[1], out var vsync):
                         QualitySettings.vSyncCount = vsync ? 1 : 0;
