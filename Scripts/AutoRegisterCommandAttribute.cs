@@ -13,7 +13,7 @@ namespace poetools.Console
     public static class AutoCommandRegister
     {
         // Note: this must run after Subsystems, since that is when RuntimeConsole resets stuff.
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Init()
         {
             RuntimeConsole.OnCreate += AutoRegister;
