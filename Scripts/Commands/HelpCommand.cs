@@ -34,10 +34,17 @@ namespace poetools.Console.Commands
         public override void Execute(string[] args, RuntimeConsole console)
         {
             if (args.Length != 1)
-                return;
-
-            ICommand command = _commandRegistry.FindCommand(args[0]);
-            console.Log("help", $"\n{command.Help}");
+            {
+                console.Log("help", "List of all available commands: ");
+                
+                foreach (ICommand c in _commandRegistry.AllCommands)
+                    console.LogRaw($"\t{c.Name} - {c.Help}");
+            }
+            else
+            {
+                ICommand command = _commandRegistry.FindCommand(args[0]);
+                console.Log("help", $"\n{command.Help}");
+            }
         }
 
         private void HandleCommandAdded(CommandRegistry.CommandAddEvent eventData)

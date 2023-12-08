@@ -14,6 +14,7 @@ namespace poetools.Console
         private readonly DictionaryTree _autoCompleter = new DictionaryTree();
 
         public ICommand DefaultCommand { get; } = new ErrorCommand();
+        public IEnumerable<ICommand> AllCommands => _commandLookup.Values;
 
         public event Action<CommandAddEvent> CommandAdded;
         public event Action<CommandRemoveEvent> CommandRemoved;

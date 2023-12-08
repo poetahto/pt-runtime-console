@@ -145,9 +145,15 @@ namespace poetools.Console
             return gameObject.activeSelf;
         }
 
-        public void CycleAutoComplete()
+        public void CycleAutoCompleteForward()
         {
             _autoCompleteIndex++;
+            UpdateAutoCompleteText();
+        }
+
+        public void CycleAutoCompleteBackward()
+        {
+            _autoCompleteIndex--;
             UpdateAutoCompleteText();
         }
 

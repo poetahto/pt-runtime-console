@@ -31,21 +31,39 @@ namespace poetools.Console.Commands
                     case "windowed":
                         Screen.fullScreenMode = FullScreenMode.Windowed;
                         break;
-                    case "resolution" when args.Length >= 3 && int.TryParse(args[1], out var width) && int.TryParse(args[2], out var height):
-                        Screen.SetResolution(width, height, Screen.fullScreenMode);
+                    case "resolution":
+                        if (args.Length >= 3 && int.TryParse(args[1], out int width) && int.TryParse(args[2], out int height))
+                            Screen.SetResolution(width, height, Screen.fullScreenMode);
+                        else console.Log("screen", $"{Screen.width}x{Screen.height}");
                         break;
-                    case "refresh" when args.Length >= 2 && uint.TryParse(args[1], out var rate):
+                    case "refresh":
+                        if (args.Length >= 2 && int.TryParse(args[1], out int rate))
+                        {
 #if UNITY_2022_3
-                        Screen.SetResolution(Screen.width, Screen.height, Screen.fullScreenMode, new RefreshRate{numerator = rate, denominator = 1});
+                            Screen.SetResolution(Screen.width, Screen.height, Screen.fullScreenMode, new RefreshRate{numerator = rate, denominator = 1});
 #else
-                        Screen.SetResolution(Screen.width, Screen.height, Screen.fullScreenMode, rate);
+                            Screen.SetResolution(Screen.width, Screen.height, Screen.fullScreenMode, rate);
 #endif
+                        }
+                        else console.Log("screen", $"{Screen.currentResolution.refreshRate} HZ");
                         break;
-                    case "vsync" when args.Length >= 2 && bool.TryParse(args[1], out var vsync):
-                        QualitySettings.vSyncCount = vsync ? 1 : 0;
+                    case "vsync":
+                        if (args.Length >= 2 && bool.TryParse(args[1], out bool vsync))
+                        {
+                            QualitySettings.vSyncCount = vsync ? 1 : 0;
+                        }
+                        else console.Log("screen", $"VSYNC: {(QualitySettings.vSyncCount == 1 ? "On" : "Off")}");
                         break;
-                    case "fov" when args.Length >= 2 && int.TryParse(args[1], out var fov):
-                        Camera.main.fieldOfView = fov;
+                    case "fov":
+                        Camera mainCamera = Camera.main;
+
+                        if (mainCamera != null)
+                        {
+                            if (args.Length >= 2 && int.TryParse(args[1], out int fov))
+                                mainCamera.fieldOfView = fov;
+                            else console.Log("screen", $"{mainCamera.fieldOfView}");
+                        }
+                        
                         break;
                 }
             }

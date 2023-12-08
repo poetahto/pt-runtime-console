@@ -19,7 +19,7 @@ namespace poetools.Console
             bool historyBackward = Input.GetKeyDown(historyBackwardKey);
             bool historyForward = Input.GetKeyDown(historyForwardKey);
 
-            foreach (var console in FindObjectsOfType<RuntimeConsole>(true))
+            foreach (RuntimeConsole console in FindObjectsOfType<RuntimeConsole>(true))
             {
                 if (toggleVisibility)
                     console.ToggleVisibility();
@@ -27,7 +27,12 @@ namespace poetools.Console
                 if (console.IsVisible())
                 {
                     if (cycleAutoComplete)
-                        console.CycleAutoComplete();
+                    {
+                        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+                            console.CycleAutoCompleteBackward();
+                        
+                        else console.CycleAutoCompleteForward();
+                    }
 
                     if (historyBackward)
                         console.MoveHistoryBackward();
