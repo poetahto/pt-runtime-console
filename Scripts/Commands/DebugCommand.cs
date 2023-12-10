@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 namespace poetools.Console.Commands
 {
-    [CreateAssetMenu]
+    [CreateAssetMenu(menuName = RuntimeConsoleNaming.AssetMenuName + "/Commands/Debug")]
     public class DebugCommand : Command
     {
         public override string Name => "debug";
